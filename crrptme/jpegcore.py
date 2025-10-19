@@ -73,6 +73,12 @@ class JPEGCore:
         self.core_lib.jpeg_get_num_components.argtypes = [ctypes.c_void_p]
         self.core_lib.jpeg_get_num_components.restype = ctypes.c_int
 
+        self.core_lib.jpeg_get_num_blocks_x.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        self.core_lib.jpeg_get_num_blocks_x.restype = ctypes.c_int
+
+        self.core_lib.jpeg_get_num_blocks_y.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        self.core_lib.jpeg_get_num_blocks_y.restype = ctypes.c_int
+
         self.core_lib.jpeg_get_dct_block.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, 
                                                      ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
         self.core_lib.jpeg_get_dct_block.restype = ctypes.c_int
@@ -80,6 +86,12 @@ class JPEGCore:
         self.core_lib.jpeg_set_dct_block.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, 
                                                      ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
         self.core_lib.jpeg_set_dct_block.restype = ctypes.c_int
+
+    def get_num_blocks_x(self, component: int) -> int:
+        return self.core_lib.jpeg_get_num_blocks_x(self.handle, component)
+
+    def get_num_blocks_y(self, component: int) -> int:
+        return self.core_lib.jpeg_get_num_blocks_y(self.handle, component)
 
     def get_dct_block(self, channel: int, bx: int, by: int) -> np.ndarray:
         buf = (ctypes.c_float * 64)()
