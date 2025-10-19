@@ -48,17 +48,28 @@ class JPEGCore:
         self.handle = self.core_lib.jpeg_open(path.encode("utf-8"))
         if not self.handle:
             raise RuntimeError(f"Failed to open JPEG file: {path}")
+        
+        self.width = self.core_lib.jpeg_get_width(self.handle)
+        self.height = self.core_lib.jpeg_get_height(self.handle)
+        self.num_components = self.core_lib.jpeg_get_num_components(self.handle)
 
         self.path = path
 
     def _bind_functions(self):
-        # jpeg_open
         self.core_lib.jpeg_open.argtypes = [ctypes.c_char_p]
         self.core_lib.jpeg_open.restype = ctypes.c_void_p
 
-        # jpeg_close
         self.core_lib.jpeg_close.argtypes = [ctypes.c_void_p]
         self.core_lib.jpeg_close.restype = None
+
+        self.core_lib.jpeg_get_width.argtypes = [ctypes.c_void_p]
+        self.core_lib.jpeg_get_width.restype = ctypes.c_int
+
+        self.core_lib.jpeg_get_height.argtypes = [ctypes.c_void_p]
+        self.core_lib.jpeg_get_height.restype = ctypes.c_int
+
+        self.core_lib.jpeg_get_num_components.argtypes = [ctypes.c_void_p]
+        self.core_lib.jpeg_get_num_components.restype = ctypes.c_int
 
     def close(self):
         if self.handle:
@@ -77,5 +88,6 @@ if __name__ == "__main__":
 
     jc = JPEGCore(image)
     print(f"Opened: {image}")
+    print(f"Width: {jc.width}, Height: {jc.height}, Components: {jc.num_components}")
     jc.close()
     print(f"Closed: {image}")
