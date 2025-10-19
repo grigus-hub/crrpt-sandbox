@@ -86,6 +86,9 @@ class JPEGCore:
         self.core_lib.jpeg_set_dct_block.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, 
                                                      ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
         self.core_lib.jpeg_set_dct_block.restype = ctypes.c_int
+        
+        self.core_lib.jpeg_save.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+        self.core_lib.jpeg_save.restype = ctypes.c_int
 
     def get_num_blocks_x(self, component: int) -> int:
         return self.core_lib.jpeg_get_num_blocks_x(self.handle, component)
@@ -110,6 +113,12 @@ class JPEGCore:
         if res < 0:
             raise RuntimeError(f"jpeg_set_dct_block failed: {res}")
         return res
+    
+    def save(self, out_path: str, quality: int = 95):
+        res =self.core_lib.jpeg_save(self.handle, out_path.encode("utf-8"), int(quality))
+        if res != 0:
+            raise RuntimeError(f"jpeg_save failed: {res}")
+        return out_path
 
     def close(self):
         if self.handle:
