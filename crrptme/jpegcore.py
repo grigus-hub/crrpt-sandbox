@@ -86,6 +86,14 @@ class JPEGCore:
         self.core_lib.jpeg_set_dct_block.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, 
                                                      ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
         self.core_lib.jpeg_set_dct_block.restype = ctypes.c_int
+
+        self.core_lib.jpeg_get_quant_table.argtypes = [ctypes.c_void_p, ctypes.c_int, 
+                                                       ctypes.POINTER(ctypes.c_uint16), ctypes.c_int]
+        self.core_lib.jpeg_get_quant_table.restype = ctypes.c_int
+
+        self.core_lib.jpeg_set_quant_table.argtypes = [ctypes.c_void_p, ctypes.c_int, 
+                                                       ctypes.POINTER(ctypes.c_uint16), ctypes.c_int]
+        self.core_lib.jpeg_set_quant_table.restype = ctypes.c_int
         
         self.core_lib.jpeg_save.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
         self.core_lib.jpeg_save.restype = ctypes.c_int
@@ -112,6 +120,24 @@ class JPEGCore:
         res = self.core_lib.jpeg_set_dct_block(self.handle, channel, bx, by, buf, 64)
         if res < 0:
             raise RuntimeError(f"jpeg_set_dct_block failed: {res}")
+        return res
+    
+    def get_quant_table(self, channel: int) -> np.ndarray:
+        buf = (ctypes.c_uint16 * 64)()
+        res = self.core_lib.jpeg_get_quant_table(self.handle, channel, buf, 64)
+        if res < 0:
+            raise RuntimeError(f"jpeg_get_quant_table failed: {res}")
+        arr = np.ctypeslib.as_array(buf).astype(np.uint16)
+        return arr.reshape((8, 8)).copy()
+
+    def set_quant_table(self, channel: int, table: np.ndarray):
+        if table.shape != (8, 8):
+            raise ValueError("quant table must be (8,8)")
+        flat = table.astype(np.uint16).ravel()
+        buf = (ctypes.c_uint16 * 64)(*flat.tolist())
+        res = self.core_lib.jpeg_set_quant_table(self.handle, channel, buf, 64)
+        if res < 0:
+            raise RuntimeError(f"jpeg_set_quant_table failed: {res}")
         return res
     
     def save(self, out_path: str, quality: int = 95):
